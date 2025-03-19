@@ -12,7 +12,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 const DB = "mongodb+srv://mohammadullah:lktg1342@cluster0.z8q8v.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 

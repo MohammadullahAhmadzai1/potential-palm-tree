@@ -109,4 +109,50 @@ productsRoute.get('/api/top-rated-products', async (req, res) => {
   }
 });
 
+productsRoute.get('/api/products-by-subcategory/:subCategory', async(req, res)=>{
+  try {
+    const {subCategory} = req.params;
+    const products = await Product.find({subCategory:subCategory});
+    if(!products || products.length==0){
+      return res.status(404).json({msg:"No Products found in this subCategory"});
+    }
+    return res.status(200).json(products);
+  } catch (e) {
+    res.status(500).json({error: e.message});
+  }
+});
+
+//Route for searching products by name or description
+productsRoute.get('/api/search-products', async(req, res)=>{
+  try {
+    //Extract the query parameter from the request query String
+    const {query} = req.query;
+    //Validate that query parameter is provided
+    //if missing, return 400 status with an error message
+    if(!query){
+      return res.status(400).json({msg:"Query parameter required"});
+    }
+    //search for the products collection for documents where either "productName" or "description"
+    //contains the specified query String
+    const products = await Product.find({
+      $or:[
+        //Regex will match any productName containing the query String,
+        //For example, if the user search for 'apple' the reqex will check if 'apple' is part of any
+        //productName, so products name "Green Apple ", or "Fresh Apples", would all match because they contain the word 'apple'
+        {productName: {$regex:query, $options:'i'}},
+        {description: {$regex:query, $options:'i'}},
+      ]
+    });
+
+    //check if any products were found, if no product match the query return 404
+    if(!products || products.length==0){
+      return res.status(404).json({msg:"No products fount matching the query"});
+    }
+    return res.status(200).json(products);
+
+  } catch (e) {
+    res.status(500).json({error:e.message});
+  }
+});
+
 module.exports = productsRoute;

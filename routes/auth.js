@@ -44,7 +44,7 @@ authRoute.post('/api/signin', async (req, res) => {
         // 3. Generate JWT token (with secret and expiration)
       const token = jwt.sign(
         { id: findUser._id },
-        process.env.JWT_SECRET, // Add the secret key here
+        "passwordKey", // Add the secret key here
       );
   
       // 4. Remove password from response

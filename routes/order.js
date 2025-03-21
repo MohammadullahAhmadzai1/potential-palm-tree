@@ -1,19 +1,21 @@
 const express = require('express');
 const orderRouter = express.Router();
 const Order = require('../models/order');
-orderRouter.post('/orders', async (req, res) => {
+const stripe = require('stripe')("sk_test_51R4WP1Ldmwgam28mVVRjE4hNgEbHNsJrHL3p8PS5wvpFjIfjHyWyXlo1f29vepCsmPudFL60ZVtBc8xtE6988IJX00GxpMspG0");
+const {auth, vendorAuth} = require('../middleware/auth');
+orderRouter.post('/orders',auth, async (req, res) => {
     try {
         const {
             fullName, email, state, city, locality, productName,
             productPrice, productId, quantity, category, image,
-            buyerId, vendorId
+            buyerId, vendorId, paymentStatus, paymentIntentId, paymentMethod
         } = req.body;
 
         const createdAt = new Date();
         const order = new Order({
             fullName, email, state, city, locality, productName,
             productPrice, productId, quantity, category, image,
-            buyerId, vendorId, createdAt
+            buyerId, vendorId, paymentStatus, paymentIntentId, paymentMethod, createdAt
         });
 
         await order.save();
@@ -27,13 +29,33 @@ orderRouter.post('/orders', async (req, res) => {
     }
 });
 
+//payment api 
+orderRouter.post('/payment-intent',auth, async (req,res)=>{
+    try {
+        const {amount, currency} = req.body;
+        const paymentIntent = await stripe.paymentIntents.create({
+           amount,
+           currency, 
+        });
+        return res.status(200).json(paymentIntent);
+    } catch (e) { 
+        return res.status(500).json({error: e.message});
+    }
+});
 
-orderRouter.get('/orders/:buyerId', async (req, res) => {
+orderRouter.get('/payment-intent/:id',auth, async(req,res)=>{
+    try {
+        const paymentIntent = await stripe.paymentIntents.retrieve(req.params.id);
+        return res.status(200).json(paymentIntent);
+    } catch (e) {
+        return res.status(500).json({error:e.message});
+    }
+});
+
+orderRouter.get('/orders/:buyerId',auth, async (req, res) => {
     try {
       const { buyerId } = req.params;
       const orders = await Order.find({ buyerId });
-
-      console.log("Orders fetched:", orders); // Debugging log
 
       if (orders.length === 0) {
         return res.status(404).json({ msg: "No Orders found for this buyer" });

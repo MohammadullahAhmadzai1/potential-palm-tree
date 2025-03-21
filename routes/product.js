@@ -146,7 +146,7 @@ productsRoute.get('/api/search-products', async(req, res)=>{
 
     //check if any products were found, if no product match the query return 404
     if(!products || products.length==0){
-      return res.status(404).json({msg:"No products fount matching the query"});
+      return res.status(404).json({msg:"No products found matching the query"});
     }
     return res.status(200).json(products);
 

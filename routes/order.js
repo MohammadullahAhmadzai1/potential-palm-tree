@@ -3,7 +3,7 @@ const orderRouter = express.Router();
 const Order = require('../models/order');
 const stripe = require('stripe')("sk_test_51R4WP1Ldmwgam28mVVRjE4hNgEbHNsJrHL3p8PS5wvpFjIfjHyWyXlo1f29vepCsmPudFL60ZVtBc8xtE6988IJX00GxpMspG0");
 const {auth, vendorAuth} = require('../middleware/auth');
-orderRouter.post('/orders',auth, async (req, res) => {
+orderRouter.post('/orders',auth,vendorAuth, async (req, res) => {
     try {
         const {
             fullName, email, state, city, locality, productName,
@@ -82,10 +82,15 @@ orderRouter.delete('/orders/:id', async(req, res)=>{
         res.status(500).json({error: e.message});
     }
 });
-orderRouter.get('/orders/vendors/:vendorId', async (req, res)=>{
+orderRouter.get('/orders/vendors/:vendorId', vendorAuth, async (req, res)=>{
     try {
         //Extract the vendorId from the request parameter
-        const {vendorId} = req.params;
+        const { vendorId } = req.params;
+
+    // Verify URL param matches authenticated vendor's ID
+    if (vendorId !== req.vendor._id.toString()) {
+      return res.status(403).json({ msg: "Unauthorized access" });
+    }
         //find all the orders in the database that match the buyerdid
         const orders = await Order.find({vendorId});
         if(orders.length == 0){

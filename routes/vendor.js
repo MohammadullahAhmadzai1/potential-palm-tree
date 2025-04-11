@@ -1,5 +1,6 @@
 const express = require('express');
 const Vendor = require('../models/vendor').default;
+const User = require('../models/user');
 const vendorRouter = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -7,13 +8,18 @@ const jwt = require('jsonwebtoken');
 // Add middleware for JSON parsing
 vendorRouter.use(express.json());
 
-vendorRouter.post('/api/vendor/signup', async (req, res) => {
+vendorRouter.post('/api/v2/vendor/signup', async (req, res) => {
     try {
-        const { fullName, email, password } = req.body;
+        const { fullName, email, storeName, storeImage, storeDescription, password } = req.body;
 
         // Validate required fields
         if (!fullName || !email || !password) {
             return res.status(400).json({ msg: "All fields are required" });
+        }
+        //check if the email already exists in the regular users collection
+        const existingUserEmail = await User.findOne({email});
+        if(existingUserEmail){
+          return res.status(400).json({msg:"A user with the same email already exist"});
         }
 
         // Check for existing vendor
@@ -30,6 +36,9 @@ vendorRouter.post('/api/vendor/signup', async (req, res) => {
         const vendor = new Vendor({
             fullName,
             email,
+            storeName,
+            storeImage,
+            storeDescription,
             password: hashedPassword
         });
 
@@ -44,10 +53,10 @@ vendorRouter.post('/api/vendor/signup', async (req, res) => {
     } catch (e) {
         console.error("Signup Error:", e);
         res.status(500).json({ error: "Internal server error" });
-    }
+    } 
 });
 
-vendorRouter.post('/api/vendor/signin', async (req, res) => {
+vendorRouter.post('/api/v2/vendor/signin', async (req, res) => {
     try {
       const { email, password } = req.body;
   

@@ -12,7 +12,6 @@ const orderSchema = mongoose.Schema({
     category: { type: String, required: true },
     image: { type: String, required: true },
     buyerId: { type: String, required: true },
-    vendorId: { type: String, required: true },
     processing: { type: Boolean, default: true },
     delivered: { type: Boolean, default: false },
     paymentStatus:{type:String, required:true},

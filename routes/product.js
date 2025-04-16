@@ -1,15 +1,12 @@
 const express = require('express');
 const Product = require('../models/product');
 const productsRoute = express.Router();
-const { auth, vendorAuth } = require('../middleware/auth'); // Path is correct
+const { auth } = require('../middleware/auth'); // Path is correct
 // Create product (with vendor auth)
-productsRoute.post('/api/products',auth, vendorAuth, async (req, res) => {
+// Remove both 'auth' and 'vendorAuth' middlewares
+productsRoute.post('/api/products', async (req, res) => {
   try {
     const { productName, productPrice, quantity, description, category, subCategory, images } = req.body;
-    
-    // Get vendor details from middleware
-    const vendorId = req.user._id;
-    const vendorFullName = req.user.fullName;
 
     const product = new Product({
       productName,
@@ -17,8 +14,6 @@ productsRoute.post('/api/products',auth, vendorAuth, async (req, res) => {
       quantity,
       description,
       category,
-      vendorId,
-      vendorFullName,
       subCategory,
       images
     });
@@ -32,7 +27,6 @@ productsRoute.post('/api/products',auth, vendorAuth, async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
-
 // Popular products
 productsRoute.get('/api/popular-products', async (req, res) => {
   try {
@@ -155,33 +149,33 @@ productsRoute.get('/api/search-products', async(req, res)=>{
   }
 });
 
-// Route to edit an existing product
-productsRoute.put('/api/edit-product/:productId',auth,vendorAuth, async(req, res)=>{
-  try {
-    //Extract productid from the request parameter
-    const {productId} = req.params;
+// // Route to edit an existing product
+// productsRoute.put('/api/edit-product/:productId',auth, async(req, res)=>{
+//   try {
+//     //Extract productid from the request parameter
+//     const {productId} = req.params;
 
-    //Check if the product exists and if the vendor is authorized to edit it
-    const product = await Product.findById(productId);
-    if(!product){
-      return res.status(404).json({msg:"Product not found"});
-    }  
-    if(product.vendorId.toString !== req.user.id){
-      return res.status(403).json({msg:"Unauthorized to edit this product"});
-    }
-    //Destructure the req.body to exclude vendorId
-    const {vendorId, ...updateData} = req.body;
+//     //Check if the product exists and if the vendor is authorized to edit it
+//     const product = await Product.findById(productId);
+//     if(!product){
+//       return res.status(404).json({msg:"Product not found"});
+//     }  
+//     if(product.vendorId.toString !== req.user.id){
+//       return res.status(403).json({msg:"Unauthorized to edit this product"});
+//     }
+//     //Destructure the req.body to exclude vendorId
+//     const {vendorId, ...updateData} = req.body;
 
-    //update the product with the fields provided in updateData
-    const updatedProduct =  await Product.findByIdAndUpdate(
-      productId,
-      {$set: updateData}, //update only fields in the updateData
-      {new:true}//return the updated product document in the response
-    );
-    //return the updated product with 200 ok status
-    return res.status(200).json(updatedProduct);
-  } catch (e) {
-    return res.status(500).json({error: e.message});
-  }
-});
+//     //update the product with the fields provided in updateData
+//     const updatedProduct =  await Product.findByIdAndUpdate(
+//       productId,
+//       {$set: updateData}, //update only fields in the updateData
+//       {new:true}//return the updated product document in the response
+//     );
+//     //return the updated product with 200 ok status
+//     return res.status(200).json(updatedProduct);
+//   } catch (e) {
+//     return res.status(500).json({error: e.message});
+//   }
+// });
 module.exports = productsRoute;

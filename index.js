@@ -6,13 +6,15 @@ const categoryRouter = require('./routes/category');
 const subCategoryRouter = require('./routes/sub_category');
 const productsRouter = require('./routes/product');
 const productReviewRouter = require('./routes/product_review');
-const vendorRouter = require('./routes/vendor'); 
 const orderRouter = require('./routes/order');
+const favRoute = require('./routes/fav');
+const cartRoute = require('./routes/cart');
+
 const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 const DB = "mongodb+srv://mohammadullah:lktg1342@cluster0.z8q8v.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
@@ -26,7 +28,8 @@ app.use(categoryRouter);
 app.use(subCategoryRouter);
 app.use(productsRouter);
 app.use(productReviewRouter);
-app.use(vendorRouter);
+app.use(favRoute);
+app.use(cartRoute);
 
 
 // Connect to MongoDB

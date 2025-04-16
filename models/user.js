@@ -20,15 +20,15 @@ const userSchema = mongoose.Schema({
     },
     state: {
         type: String,
-        default: " ",
+        default: "",
     },
     city: {
         type: String,
-        default: " ",
+        default: "",
     },
     locality: {
         type: String,
-        default: " ",
+        default: "",
     },
     password: {
         type: String,

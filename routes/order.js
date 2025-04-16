@@ -2,20 +2,21 @@ const express = require('express');
 const orderRouter = express.Router();
 const Order = require('../models/order');
 const stripe = require('stripe')("sk_test_51R4WP1Ldmwgam28mVVRjE4hNgEbHNsJrHL3p8PS5wvpFjIfjHyWyXlo1f29vepCsmPudFL60ZVtBc8xtE6988IJX00GxpMspG0");
-const {auth, vendorAuth} = require('../middleware/auth');
-orderRouter.post('/orders',auth,vendorAuth, async (req, res) => {
+const {auth} = require('../middleware/auth');
+orderRouter.post('/orders',auth, async (req, res) => {
     try {
+        console.log("📥 Incoming order:", req.body);
+        const buyerId = req.user._id; 
         const {
             fullName, email, state, city, locality, productName,
-            productPrice, productId, quantity, category, image,
-            buyerId, vendorId, paymentStatus, paymentIntentId, paymentMethod
+            productPrice, productId, quantity, category, image, processing, delivered,
+             paymentStatus, paymentIntentId, paymentMethod
         } = req.body;
 
-        const createdAt = new Date();
         const order = new Order({
             fullName, email, state, city, locality, productName,
             productPrice, productId, quantity, category, image,
-            buyerId, vendorId, paymentStatus, paymentIntentId, paymentMethod, createdAt
+            buyerId,processing, delivered, paymentStatus, paymentIntentId, paymentMethod
         });
 
         await order.save();
@@ -25,7 +26,11 @@ orderRouter.post('/orders',auth,vendorAuth, async (req, res) => {
 
         return res.status(201).json(savedOrder); // Send the saved order
     } catch (e) {
-        res.status(500).json({ error: e.message });
+         // Improved error handling
+         if (e.name === 'ValidationError') {
+            return res.status(400).json({ error: e.message });
+        }
+        res.status(500).json({ error: 'Server error: ' + e.message });
     }
 });
 
@@ -82,26 +87,21 @@ orderRouter.delete('/orders/:id', async(req, res)=>{
         res.status(500).json({error: e.message});
     }
 });
-orderRouter.get('/orders/vendors/:vendorId', vendorAuth, async (req, res)=>{
-    try {
-        //Extract the vendorId from the request parameter
-        const { vendorId } = req.params;
+// orderRouter.get('/orders/vendors/:vendorId', vendorAuth, async (req, res)=>{
+//     try {
+//         //Extract the vendorId from the request parameter
+//         const {vendorId} = req.params;
+//         //find all the orders in the database that match the buyerdid
+//         const orders = await Order.find({vendorId});
+//         if(orders.length == 0){
+//             return res.status(404).json({msg:"No Orders found for this vendor"});
+//         }
+//         return res.status(200).json(orders);
 
-    // Verify URL param matches authenticated vendor's ID
-    if (vendorId !== req.vendor._id.toString()) {
-      return res.status(403).json({ msg: "Unauthorized access" });
-    }
-        //find all the orders in the database that match the buyerdid
-        const orders = await Order.find({vendorId});
-        if(orders.length == 0){
-            return res.status(404).json({msg:"No Orders found for this vendor"});
-        }
-        return res.status(200).json(orders);
-
-    } catch (e) {
-        res.status(500).json({error: e.message});
-    }
-});
+//     } catch (e) {
+//         res.status(500).json({error: e.message});
+//     }
+// });
 
 orderRouter.patch('/orders/:id/delivered', async(req, res)=>{
     try {

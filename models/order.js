@@ -9,7 +9,7 @@ const orderSchema = mongoose.Schema({
     productPrice: { type: Number, required: true },
     productId: { type: mongoose.Schema.Types.String, required: true }, 
     quantity: { type: Number, required: true },
-    category: { type: String, required: true },
+    category: { type: [String], required: true },
     image: { type: String, required: true },
     buyerId: { type: String, required: true },
     processing: { type: Boolean, default: true },

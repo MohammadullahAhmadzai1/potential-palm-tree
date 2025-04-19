@@ -1,6 +1,8 @@
 const express = require('express');
 const favRoute = express.Router();
 const Favourite = require('../models/fav');
+const {auth} = require('../middleware/auth');
+const mongoose = require('mongoose');
 
 // Protected route
 favRoute.post('/api/favourite', async (req, res) => {
@@ -75,32 +77,44 @@ favRoute.get('/api/favourites/:buyerId', async (req, res) => {
     }
 });
 // Delete specific favorite
-favRoute.delete('/api/favourite/:id', async (req, res) => {
+favRoute.delete('/api/favourite/:id',auth, async (req, res) => {
     try {
+        // 1. Verify authentication
+        if (!req.user) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
         const buyerId = req.user._id;
         const favouriteId = req.params.id;
 
-        const favourite = await Favourite.findOne({
+        // 2. Validate ObjectId format
+        if (!mongoose.Types.ObjectId.isValid(favouriteId)) {
+            return res.status(400).json({ error: "Invalid favorite ID format" });
+        }
+
+        // 3. Find and delete with proper error handling
+        const favourite = await Favourite.findOneAndDelete({
             _id: favouriteId,
             buyerId
         });
 
         if (!favourite) {
-            return res.status(404).json({ error: "Favorite not found" });
+            return res.status(404).json({ 
+                error: "Favorite not found or unauthorized access" 
+            });
         }
 
-        await Favourite.deleteOne({ _id: favouriteId });
-        
         res.json({ 
             message: "Favorite removed successfully",
             deletedId: favouriteId
         });
 
     } catch (e) {
-        if (e.name === 'CastError') {
-            return res.status(400).json({ error: "Invalid favorite ID" });
-        }
-        res.status(500).json({ error: "Server error" });
+        console.error("Delete Error:", e);  // Detailed logging
+        res.status(500).json({ 
+            error: "Server error",
+            details: process.env.NODE_ENV === 'development' ? e.message : undefined
+        });
     }
 });
 

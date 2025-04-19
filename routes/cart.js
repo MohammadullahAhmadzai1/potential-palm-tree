@@ -1,7 +1,7 @@
 const express = require('express');
 const cartRoute = express.Router();
 const Cart = require('../models/cart');
-
+const mongoose = require('mongoose');
 // Add to Cart
 cartRoute.post('/api/cart', async (req, res) => {
     try {
@@ -77,7 +77,17 @@ cartRoute.put('/api/cart/:id', async (req, res) => {
 // Remove from Cart
 cartRoute.delete('/api/cart/:id', async (req, res) => {
     try {
-        await Cart.findByIdAndDelete(req.params.id);
+        // Verify valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ error: "Invalid cart item ID" });
+        }
+
+        const deletedItem = await Cart.findByIdAndDelete(req.params.id);
+        
+        if (!deletedItem) {
+            return res.status(404).json({ error: "Cart item not found" });
+        }
+
         res.json({ message: 'Item removed from cart' });
     } catch (error) {
         res.status(500).json({ error: error.message });

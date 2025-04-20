@@ -6,24 +6,50 @@ const {auth} = require('../middleware/auth');
 const authRoute = express.Router();
 
 // Route for user signup
+// authRoute.post('/api/signup', async (req, res) => {
+//     try {
+//         const { fullName, email, password } = req.body;
+//         const existingEmail = await User.findOne({ email }); // ✅ Corrected
+//         if (existingEmail) {
+//             return res.status(400).json({success:false, msg: "User with same email already exists" });
+//         } else {
+//             //random String
+//         const salt = await bcrypt.genSalt(10);
+//             //hashing password
+//         const hashingPassword = await bcrypt.hash(password, salt);
+//             let user = new User({ fullName, email, password:hashingPassword }); // Use "const" instead of "var"
+//             await user.save();
+//             res.json({success:true, user });
+//         }
+//     } catch (e) {
+//         res.status(500).json({ error: e.message });
+//     }
+// });
 authRoute.post('/api/signup', async (req, res) => {
-    try {
-        const { fullName, email, password } = req.body;
-        const existingEmail = await User.findOne({ email }); // ✅ Corrected
-        if (existingEmail) {
-            return res.status(400).json({success:false, msg: "User with same email already exists" });
-        } else {
-            //random String
-        const salt = await bcrypt.genSalt(10);
-            //hashing password
-        const hashingPassword = await bcrypt.hash(password, salt);
-            let user = new User({ fullName, email, password:hashingPassword }); // Use "const" instead of "var"
-            await user.save();
-            res.json({success:true, user });
-        }
-    } catch (e) {
-        res.status(500).json({ error: e.message });
+  try {
+    const { fullName, email, password } = req.body;
+    const existingEmail = await User.findOne({ email });
+
+    if (existingEmail) {
+      return res.status(400).json({ success: false, msg: "User with same email already exists" });
     }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashingPassword = await bcrypt.hash(password, salt);
+
+    const user = new User({ fullName, email, password: hashingPassword });
+    await user.save();
+
+    // ✅ Create and return JWT token on signup too
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+
+    const { password: _, ...userWithoutPassword } = user._doc;
+
+    res.json({ success: true, token, user: userWithoutPassword });
+
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 authRoute.post('/api/signin', async (req, res) => {

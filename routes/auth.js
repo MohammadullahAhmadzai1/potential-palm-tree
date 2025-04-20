@@ -87,18 +87,6 @@ authRoute.post('/api/signin', async (req, res) => {
   }
 });
 
-  //Define a Get route for the authentication router
-  // authRoute.get('/',auth, async(req, res)=>{
-  //   try {
-  //     //Retrieve the user data from the database using the id from the authenticated user
-  //     const user = await User.findById(req.user);
-    
-  //     //send the user data as json response, including all the document fields and the token
-  //     res.json({...user._doc, token: req.token});
-  //   } catch (e) {
-  //     return res.status(500).json({error: e.message});
-  //   }    
-  // });
   authRoute.get('/', auth, async (req, res) => {
     try {
       // Directly use req.user (already fetched in middleware)
@@ -179,4 +167,20 @@ authRoute.post('/api/signin', async (req, res) => {
       return res.status(500).json({error:e.message});
     }
   });
+  // Backend route (remove 'auth' middleware)
+authRoute.delete('/api/user/delete-account-adminPanel/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    await User.findByIdAndDelete(id);
+    return res.status(200).json({ msg: "User deleted successfully" });
+  } catch (e) {
+    return res.status(500).json({ error: e.message });
+  }
+});
 module.exports = authRoute;

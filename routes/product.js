@@ -175,4 +175,29 @@ productsRoute.put('/api/edit-product/:productId', async(req, res)=>{
     return res.status(500).json({error: e.message});
   }
 });
+// Route to get all products (for admin panel)
+productsRoute.get('/api/admin/products', async (req, res) => {
+  try {
+    const products = await Product.find({});
+    res.status(200).json(products);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Route to delete product
+productsRoute.delete('/api/delete-products/:productId', async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const product = await Product.findByIdAndDelete(productId);
+    
+    if (!product) {
+      return res.status(404).json({ msg: "Product not found" });
+    }
+    
+    res.status(200).json({ msg: "Product deleted successfully" });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 module.exports = productsRoute;

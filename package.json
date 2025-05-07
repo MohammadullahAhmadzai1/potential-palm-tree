@@ -8,7 +8,7 @@
   },
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "��#\u0000 \u0000s\u0000a\u0000f\u0000i\u0000-\u0000m\u0000u\u0000l\u0000t\u0000i\u0000-\u0000s\u0000t\u0000o\u0000r\u0000e\u0000-\u0000b\u0000a\u0000c\u0000k\u0000e\u0000n\u0000d\u0000_\u0000a\u0000p\u0000i\u0000\r\u0000 \u0000",
   "dependencies": {
     "bcryptjs": "^3.0.0",
     "chalk": "^5.4.1",
@@ -17,6 +17,8 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.1",
+    "multer": "^1.4.5-lts.2",
+    "node-appwrite": "^16.0.0",
     "nodemon": "^3.1.9",
     "stripe": "^17.7.0"
   },
@@ -27,5 +29,14 @@
     "eslint-plugin-react": "^7.37.4",
     "globals": "^15.15.0",
     "prettier": "^3.5.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MohammadullahAhmadzai1/potential-palm-tree.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/MohammadullahAhmadzai1/potential-palm-tree/issues"
+  },
+  "homepage": "https://github.com/MohammadullahAhmadzai1/potential-palm-tree#readme"
 }

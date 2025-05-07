@@ -2,6 +2,9 @@ const express = require('express');
 const Product = require('../models/product');
 const productsRoute = express.Router();
 const { auth } = require('../middleware/auth'); // Path is correct
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
+const { Client, Storage, ID } = require('node-appwrite');
 // Create product (with vendor auth)
 // Remove both 'auth' and 'vendorAuth' middlewares
 productsRoute.post('/api/products', async (req, res) => {
@@ -147,44 +150,30 @@ productsRoute.get('/api/search-products', async(req, res)=>{
   } catch (e) {
     res.status(500).json({error:e.message});
   }
-});
+}); 
 
-// Route to edit an existing product
-productsRoute.put('/api/edit-product/:productId', async(req, res)=>{
+// Initialize Appwrite Client
+const client = new Client()
+  .setEndpoint('https://cloud.appwrite.io/v1')
+  .setProject('67c01535000d5e02f208') // Your Project ID
+  .setKey(process.env.APPWRITE_API_KEY); // Replace with your Appwrite API Key
+
+const storage = new Storage(client);
+const bucketId = "67c267bc002c6b0e20ee"; // Your Bucket ID
+
+// Example Node.js/Express implementation
+productsRoute.put('/api/edit-product/:productId', async (req, res) => {
   try {
-    //Extract productid from the request parameter
-    const {productId} = req.params;
-
-    //Check if the product exists and if the vendor is authorized to edit it
-    const product = await Product.findById(productId);
-    if(!product){
-      return res.status(404).json({msg:"Product not found"});
-    }  
-    //Destructure the req.body to exclude vendorId
-    const {_id, ...updateData} = req.body;
-
-    //update the product with the fields provided in updateData
-    const updatedProduct =  await Product.findByIdAndUpdate(
-      productId,
-      {$set: updateData}, //update only fields in the updateData
-      {new:true}//return the updated product document in the response
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.productId,
+      { $set: req.body }, // Complete replacement
+      { new: true }
     );
-    //return the updated product with 200 ok status
-    return res.status(200).json(updatedProduct);
-  } catch (e) {
-    return res.status(500).json({error: e.message});
+    res.status(200).json(updatedProduct);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
-// Route to get all products (for admin panel)
-productsRoute.get('/api/admin/products', async (req, res) => {
-  try {
-    const products = await Product.find({});
-    res.status(200).json(products);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
 // Route to delete product
 productsRoute.delete('/api/delete-products/:productId', async (req, res) => {
   try {
@@ -196,6 +185,14 @@ productsRoute.delete('/api/delete-products/:productId', async (req, res) => {
     }
     
     res.status(200).json({ msg: "Product deleted successfully" });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+productsRoute.get('/api/admin/products', async (req, res) => {
+  try {
+    const products = await Product.find({});
+    res.status(200).json(products);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

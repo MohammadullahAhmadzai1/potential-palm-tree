@@ -9,6 +9,7 @@ const productReviewRouter = require('./routes/product_review');
 const orderRouter = require('./routes/order');
 const favRoute = require('./routes/fav');
 const cartRoute = require('./routes/cart');
+const adminRoute = require('./routes/admin');
 
 const cors = require('cors');
 require('dotenv').config();
@@ -30,6 +31,7 @@ app.use(productsRouter);
 app.use(productReviewRouter);
 app.use(favRoute);
 app.use(cartRoute);
+app.use(adminRoute);
 
 
 // Connect to MongoDB

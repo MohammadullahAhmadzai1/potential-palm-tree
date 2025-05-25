@@ -34,5 +34,19 @@ subCategoryRoute.get('/api/categories/:categoryName/subCategories', async(req, r
     }
     
 });
+subCategoryRoute.delete('/api/delete-subCategory/:subCategoryId', async (req, res) => {
+    try {
+      const { subCategoryId } = req.params;
+      const subCategory = await SubCategory.findByIdAndDelete(subCategoryId);
+      
+      if (!subCategory) {
+        return res.status(404).json({ msg: "Subcategory not found" });
+      }
+      
+      res.status(200).json({ msg: "Subcategory deleted successfully" });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
 module.exports = subCategoryRoute;
     

@@ -19,5 +19,19 @@ bannerRoute.get('/api/banner', async(req, res)=>{
         res.status(500).json({error:e.message});
     }
     
-})
+});
+bannerRoute.delete('/api/delete-banners/:bannerId', async (req, res) => {
+    try {
+      const { bannerId } = req.params;
+      const banner = await Banner.findByIdAndDelete(bannerId);
+      
+      if (!banner) {
+        return res.status(404).json({ msg: "Banner not found" });
+      }
+      
+      res.status(200).json({ msg: "Banner deleted successfully" });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
 module.exports = bannerRoute;

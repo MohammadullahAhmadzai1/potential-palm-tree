@@ -20,5 +20,19 @@ categoryRoute.get('/api/categories', async(req, res)=>{
         res.status(500).json({error: e.message});
     }
     
-})
+});
+categoryRoute.delete('/api/delete-category/:categoryId', async (req, res) => {
+    try {
+      const { categoryId } = req.params;
+      const category = await Category.findByIdAndDelete(categoryId);
+      
+      if (!category) {
+        return res.status(404).json({ msg: "Category not found" });
+      }
+      
+      res.status(200).json({ msg: "Category deleted successfully" });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
 module.exports = categoryRoute;

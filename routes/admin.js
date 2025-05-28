@@ -17,7 +17,7 @@ adminRoute.post('/api/admin/signup', async (req, res) => {
       });
     }
 
-    // Check for duplicate email (optional but recommended)
+    // Check for duplicate email (optional but recommended) ok it
     const existingAdmin = await Admin.findOne({ email });
     if (existingAdmin) {
       return res.status(400).json({

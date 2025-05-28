@@ -8,7 +8,16 @@ adminRoute.post('/api/admin/signup', async (req, res) => {
   try {
     const { fullName, email, password } = req.body;
 
-    // Check if admin already exists
+    // 🔒 Critical: Check if ANY admin already exists
+    const existingAdminCount = await Admin.countDocuments();
+    if (existingAdminCount > 0) {
+      return res.status(400).json({
+        success: false,
+        msg: "Only one admin account is allowed. An admin already exists."
+      });
+    }
+
+    // Check for duplicate email (optional but recommended)
     const existingAdmin = await Admin.findOne({ email });
     if (existingAdmin) {
       return res.status(400).json({
@@ -17,11 +26,10 @@ adminRoute.post('/api/admin/signup', async (req, res) => {
       });
     }
 
-    // Hash password
+    // ... rest of your signup logic (hashing, saving, token generation) ...
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create new admin
     const newAdmin = new Admin({
       fullName,
       email,
@@ -30,14 +38,12 @@ adminRoute.post('/api/admin/signup', async (req, res) => {
 
     await newAdmin.save();
 
-    // Generate JWT
     const token = jwt.sign(
       { id: newAdmin._id, role: 'admin' },
       process.env.JWT_SECRET,
       { expiresIn: '30d' }
     );
 
-    // Remove password from response
     const { password: _, ...adminWithoutPassword } = newAdmin._doc;
 
     res.status(201).json({

@@ -29,14 +29,22 @@ productReviewRoute.post('/api/product-review', async (req, res)=>{
         res.status(500).json({error: e.message});
     }  
 });
-productReviewRoute.get('/api/reviews', async (req,res)=>{
+// GET /api/reviews/:productId
+productReviewRoute.get('/api/reviews/:productId', async (req, res) => {
     try {
-        const reviews = await ProductReview.find();
-        return res.status(200).json(reviews);
+      const { productId } = req.params;
+  
+      if (!productId) {
+        return res.status(400).json({ error: "Product ID is required" });
+      }
+  
+      const reviews = await ProductReview.find({ productId });
+  
+      return res.status(200).json(reviews);
     } catch (e) {
-        res.status(500).json({error: e.message});
+      res.status(500).json({ error: e.message });
     }
-    
+  });
+  
 
-})
 module.exports = productReviewRoute;
